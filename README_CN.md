@@ -5,7 +5,9 @@
 
 
 ### 功能实现
-##### 1. 获取镜像列表
+获取镜像列表(library), 找出 '较低' 级别漏洞及以上的镜像进行自动更新(依赖 Dockerfile 中 前置 update)
+
+#### 1. 获取镜像列表
   - 通过 API 获取指定项目下镜像列表
 
 ##### 2. 查找包含漏洞镜像
@@ -67,3 +69,41 @@
                 ├── Dockerfile
                 ├── README.md
                 └── run.sh
+
+
+
+#### Shell Script
+
+
+        ws="$(dirname $JENKINS_HOME)/files/dockerfiles"
+
+        cd $ws
+
+        harbor list | awk '{print $2}' | grep '^library' | while read img
+        do
+	        #echo "`date +'%F %T.%N'` Processing $img"
+    
+            level=`harbor show $img | grep tag_scan_overview | awk -F ',' '{print $2}' | awk '{print $2}'`
+    
+            test -z "$level" && level=1
+    
+            #printf "`date +'%F %T.%N'` %-4s %-64s\n" $level $img
+            # level = 1 表示无漏洞, 忽略
+            test $level = 1 && continue
+    
+            img_dir="`echo $img | tr -t ':' '/'`"
+    
+            if [ -d $img_dir ]
+            then
+    	        image="registry.qtt6.cn/$img"
+        
+                echo "Build $image (Level: $level)"
+        
+    	        sudo docker build --no-cache -t $image $img_dir
+        
+                echo "Push $image"
+                sudo docker push $image
+            else
+    	        echo "Directory $img_dir does not esixt"
+            fi    
+        done
