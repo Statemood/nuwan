@@ -95,7 +95,7 @@
     
             if [ -d $img_dir ]
             then
-    	        image="registry.qtt6.cn/$img"
+    	        image="$HARBOR/$img"
         
                 echo "Build $image (Level: $level)"
         
