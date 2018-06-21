@@ -21,7 +21,7 @@ do
     
     if [ -d $img_dir ]
     then
-    	image="registry.qtt6.cn/$img"
+    	image="$HARBOR/$img"
         
         msg i "Build $image (Level: $level)"
         
